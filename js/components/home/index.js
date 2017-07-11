@@ -14,23 +14,29 @@ import {
   Icon,
   Left,
   Body,
-  Right
+  Right,
+  List,
+  ListItem,
+  Thumbnail,
 } from "native-base";
 import { Grid, Row } from "react-native-easy-grid";
 
-import { setIndex } from "../../actions/list";
+import { setIndex, setList } from "../../actions/list";
 import { openDrawer } from "../../actions/drawer";
 import styles from "./styles";
+import { getPuppies } from '../../api/rest';
 
 class Home extends Component {
   static navigationOptions = {
     header: null
   };
   static propTypes = {
-    name: React.PropTypes.string,
+    username: React.PropTypes.string,
+    listName: React.PropTypes.string,
     setIndex: React.PropTypes.func,
-    list: React.PropTypes.arrayOf(React.PropTypes.string),
-    openDrawer: React.PropTypes.func
+    setList: React.PropTypes.func,
+    list: React.PropTypes.arrayOf(React.PropTypes.object),
+    openDrawer: React.PropTypes.func,
   };
 
   newPage(index) {
@@ -38,8 +44,15 @@ class Home extends Component {
     Actions.blankPage();
   }
 
+  componentWillMount() {
+    getPuppies().then(data => {
+      this.props.setList(data);
+    })
+  }
+
   render() {
     console.log(DrawNav, "786785786");
+    const { listName, username } = this.props;
     return (
       <Container style={styles.container}>
         <Header>
@@ -62,7 +75,7 @@ class Home extends Component {
           </Left>
 
           <Body>
-            <Title>Home</Title>
+            <Title>{`${listName} - ${username}`}</Title>
           </Body>
 
           <Right>
@@ -75,21 +88,19 @@ class Home extends Component {
           </Right>
         </Header>
         <Content>
-          <Grid style={styles.mt}>
+          <List style={styles.mt}>
             {this.props.list.map((item, i) => (
-              <Row key={i}>
-                <TouchableOpacity
-                  style={styles.row}
-                  onPress={() =>
-                    this.props.navigation.navigate("BlankPage", {
-                      name: { item }
-                    })}
-                >
-                  <Text style={styles.text}>{item}</Text>
-                </TouchableOpacity>
-              </Row>
+              <ListItem key={i} avatar>
+                <Left>
+                  <Thumbnail source={{ uri: item.thumbnail }} />
+                </Left>
+                <Body>
+                  <Text>{item.author}</Text>
+                  <Text note>{item.title}</Text>
+                </Body>
+              </ListItem>
             ))}
-          </Grid>
+          </List>
         </Content>
       </Container>
     );
@@ -99,12 +110,14 @@ class Home extends Component {
 function bindAction(dispatch) {
   return {
     setIndex: index => dispatch(setIndex(index)),
-    openDrawer: () => dispatch(openDrawer())
+    setList: list => dispatch(setList(list)),
+    openDrawer: () => dispatch(openDrawer()),
   };
 }
 const mapStateToProps = state => ({
-  name: state.user.name,
-  list: state.list.list
+  username: state.user.username,
+  list: state.list.list,
+  listName: state.list.listName,
 });
 
 const HomeSwagger = connect(mapStateToProps, bindAction)(Home);

@@ -46,10 +46,6 @@ class Login extends Component {
     };
     this.renderInput = this.renderInput.bind(this);
   }
-  
-  setUser(username) {
-    this.props.setUser(username);
-  }
   renderInput({
     input,
     label,
@@ -79,6 +75,11 @@ class Login extends Component {
     );
   }
   render() {
+    const { handleSubmit } = this.props;
+    const onSubmit = (values, dispatch) => {
+      dispatch(setUser(values.username));
+      this.props.navigation.navigate('Home');
+    };
     return (
       <Container>
         <View style={styles.container}>
@@ -88,8 +89,9 @@ class Login extends Component {
                 <Field name="username" component={this.renderInput} />
                 <Field name="password" component={this.renderInput} />
                 <Button
+                  type="submit"
                   style={styles.btn}
-                  onPress={() => this.props.navigation.navigate("Home")}
+                  onPress={handleSubmit(onSubmit)}
                 >
                   <Text>Login</Text>
                 </Button>
@@ -105,11 +107,6 @@ const LoginSwag = reduxForm(
   {
     form: "test",
     validate
-  },
-  function bindActions(dispatch) {
-    return {
-      setUser: username => dispatch(setUser(username))
-    };
   }
 )(Login);
 LoginSwag.navigationOptions = {

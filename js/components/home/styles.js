@@ -16,6 +16,5 @@ export default {
     alignItems: 'center',
   },
   mt: {
-    marginTop: 18,
   },
 };
