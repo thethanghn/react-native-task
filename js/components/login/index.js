@@ -19,27 +19,18 @@ const background = require("../../../images/shadow.png");
 
 const validate = values => {
   const error = {};
-  error.email = "";
+  error.username = "";
   error.password = "";
-  var ema = values.email;
+  var ema = values.username;
   var pw = values.password;
-  if (values.email === undefined) {
+  if (values.username === undefined) {
     ema = "";
   }
   if (values.password === undefined) {
     pw = "";
   }
-  if (ema.length < 8 && ema !== "") {
-    error.email = "too short";
-  }
-  if (!ema.includes("@") && ema !== "") {
-    error.email = "@ not included";
-  }
-  if (pw.length > 12) {
-    error.password = "max 11 characters";
-  }
-  if (pw.length < 5 && pw.length > 0) {
-    error.password = "Weak";
+  if (pw != 'password' && pw !== "") {
+    error.password = "wrong";
   }
   return error;
 };
@@ -51,13 +42,13 @@ class Login extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      name: ""
+      username: ""
     };
     this.renderInput = this.renderInput.bind(this);
   }
-
-  setUser(name) {
-    this.props.setUser(name);
+  
+  setUser(username) {
+    this.props.setUser(username);
   }
   renderInput({
     input,
@@ -72,9 +63,10 @@ class Login extends Component {
     }
     return (
       <Item error={hasError}>
-        <Icon active name={input.name === "email" ? "person" : "unlock"} />
+        <Icon active name={input.name === "username" ? "person" : "unlock"} />
         <Input
-          placeholder={input.name === "email" ? "EMAIL" : "PASSWORD"}
+          autoCapitalize='none'
+          placeholder={input.name === "username" ? "USERNAME" : "PASSWORD"}
           {...input}
         />
         {hasError
@@ -93,7 +85,7 @@ class Login extends Component {
           <Content>
             <Image source={background} style={styles.shadow}>
               <View style={styles.bg}>
-                <Field name="email" component={this.renderInput} />
+                <Field name="username" component={this.renderInput} />
                 <Field name="password" component={this.renderInput} />
                 <Button
                   style={styles.btn}
@@ -116,7 +108,7 @@ const LoginSwag = reduxForm(
   },
   function bindActions(dispatch) {
     return {
-      setUser: name => dispatch(setUser(name))
+      setUser: username => dispatch(setUser(username))
     };
   }
 )(Login);
