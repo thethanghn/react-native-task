@@ -10,19 +10,22 @@ import {
   Icon,
   Left,
   Right,
-  Body
+  Body,
+  List,
+  ListItem,
+  Thumbnail
 } from "native-base";
 
 import styles from "./styles";
 
-class BlankPage extends Component {
+class ApprovedPage extends Component {
   static navigationOptions = {
     header: null
   };
   static propTypes = {
     name: React.PropTypes.string,
     index: React.PropTypes.number,
-    list: React.PropTypes.arrayOf(React.PropTypes.string),
+    list: React.PropTypes.arrayOf(React.PropTypes.object),
     openDrawer: React.PropTypes.func
   };
 
@@ -39,18 +42,31 @@ class BlankPage extends Component {
           </Left>
 
           <Body>
-            <Title>{name ? this.props.name : "Blank Page"}</Title>
+            <Title>{name ? this.props.name : "Disapproved List"}</Title>
           </Body>
 
           <Right />
         </Header>
 
         <Content padder>
-          <Text>
-            {this.props.navigation.state.params.name.item !== undefined
-              ? this.props.navigation.state.params.name.item
-              : "Create Something Awesome . . ."}
-          </Text>
+          {
+            list.length > 0
+            ?
+            <List dataArray={list}
+              renderRow={(item) =>
+                <ListItem avatar>
+                  <Left>
+                    <Thumbnail source={{ uri: item.thumbnail }} />
+                  </Left>
+                  <Body>
+                    <Text>{item.title}</Text>
+                  </Body>
+                </ListItem>
+              }>
+            </List>
+            :
+            <Text>No item in this list</Text>
+          }
         </Content>
       </Container>
     );
@@ -66,7 +82,7 @@ function bindAction(dispatch) {
 const mapStateToProps = state => ({
   name: state.user.name,
   index: state.list.selectedIndex,
-  list: state.list.list
+  list: _.filter(state.list.list, x => _.includes(state.list.disapproved, x.id)),
 });
 
-export default connect(mapStateToProps, bindAction)(BlankPage);
+export default connect(mapStateToProps, bindAction)(ApprovedPage);

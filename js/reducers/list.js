@@ -30,14 +30,12 @@ export default function(state: State = initialState, action: Action): State {
     case APPROVE:
       return {
         ...state,
-        list: _.filter(state.list, x => x.id != action.payload),
         approved: _.uniq(_.concat(state.approved, action.payload)),
         disapproved: _.filter(state.disapproved, x => x != action.payload),
       };
     case DISAPPROVE:
       return {
         ...state,
-        list: _.filter(state.list, x => x.id != action.payload),
         approved: _.filter(state.approved, x => x != action.payload),
         disapproved: _.uniq(_.concat(state.disapproved, action.payload)),
       };

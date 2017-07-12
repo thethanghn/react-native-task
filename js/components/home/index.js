@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { TouchableOpacity, ListView } from "react-native";
 import { connect } from "react-redux";
-import BlankPage2 from "../blankPage2";
+import DisapprovedPage from "../disapprovedPage";
 import DrawBar from "../DrawBar";
 import { DrawerNavigator, NavigationActions } from "react-navigation";
 import {
@@ -22,6 +22,7 @@ import {
   View,
 } from "native-base";
 import { Grid, Row } from "react-native-easy-grid";
+import _ from 'lodash';
 
 import { setIndex, setList, approve, disapprove } from "../../actions/list";
 import { openDrawer } from "../../actions/drawer";
@@ -46,7 +47,7 @@ class Home extends Component {
 
   newPage(index) {
     this.props.setIndex(index);
-    Actions.blankPage();
+    Actions.approvedPage();
   }
 
   componentWillMount() {
@@ -117,17 +118,24 @@ class Home extends Component {
               </ListItem>
 
             )}
-            renderHiddenRow={ data => (
+            renderHiddenRow={ (data, secId, rowId, rowMap) => (
               <View style={styles.rowBack}>
                 <TouchableOpacity
                   style={styles.approve}
-                  onPress={() => this.handleApprove(data.id)}
+                  onPress={() => {
+                    this.handleApprove(data.id);
+                    rowMap[`${secId}${rowId}`].closeRow();    
+                  }}
                 >
+                
                   <Text style={styles.approveText}>Approve</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.disapprove}
-                  onPress={() => this.handleDisapprove(data.id)}
+                  onPress={() => {
+                    this.handleDisapprove(data.id);
+                    rowMap[`${secId}${rowId}`].closeRow();    
+                  }}
                 >
                   <Text style={styles.disapproveText}>Disapprove</Text>
                 </TouchableOpacity>
@@ -151,17 +159,20 @@ function bindAction(dispatch) {
     openDrawer: () => dispatch(openDrawer()),
   };
 }
-const mapStateToProps = state => ({
-  username: state.user.username,
-  list: state.list.list,
-  listName: state.list.listName,
-});
+const mapStateToProps = state => {
+  const exclude = _.concat(state.list.approved, state.list.disapproved);
+  return {
+    username: state.user.username,
+    list: _.filter(state.list.list, x => !_.includes(exclude, x.id)),
+    listName: state.list.listName,
+  };
+};
 
 const HomeSwagger = connect(mapStateToProps, bindAction)(Home);
 const DrawNav = DrawerNavigator(
   {
     Home: { screen: HomeSwagger },
-    BlankPage2: { screen: BlankPage2 }
+    DisapprovedPage: { screen: DisapprovedPage }
   },
   {
     contentComponent: props => <DrawBar {...props} />
