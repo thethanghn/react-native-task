@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { TouchableOpacity } from "react-native";
+import { TouchableOpacity, ListView } from "react-native";
 import { connect } from "react-redux";
 import BlankPage2 from "../blankPage2";
 import DrawBar from "../DrawBar";
@@ -18,13 +18,18 @@ import {
   List,
   ListItem,
   Thumbnail,
+  SwipeRow,
+  View,
 } from "native-base";
 import { Grid, Row } from "react-native-easy-grid";
 
-import { setIndex, setList } from "../../actions/list";
+import { setIndex, setList, approve, disapprove } from "../../actions/list";
 import { openDrawer } from "../../actions/drawer";
 import styles from "./styles";
 import { getPuppies } from '../../api/rest';
+
+import { SwipeListView } from 'react-native-swipe-list-view';
+
 
 class Home extends Component {
   static navigationOptions = {
@@ -50,9 +55,18 @@ class Home extends Component {
     })
   }
 
+  handleApprove(id) {
+    this.props.approve(id);
+  }
+
+  handleDisapprove(id) {
+    this.props.disapprove(id);
+  }
+
   render() {
     console.log(DrawNav, "786785786");
     const { listName, username } = this.props;
+      const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     return (
       <Container style={styles.container}>
         <Header>
@@ -88,9 +102,11 @@ class Home extends Component {
           </Right>
         </Header>
         <Content>
-          <List style={styles.mt}>
-            {this.props.list.map((item, i) => (
-              <ListItem key={i} avatar>
+          <SwipeListView
+            closeOnRowBeginSwipe={true}
+            dataSource={ds.cloneWithRows(this.props.list)}
+            renderRow={ item => (
+                            <ListItem avatar style={styles.rowFront}>
                 <Left>
                   <Thumbnail source={{ uri: item.thumbnail }} />
                 </Left>
@@ -99,8 +115,27 @@ class Home extends Component {
                   <Text note>{item.title}</Text>
                 </Body>
               </ListItem>
-            ))}
-          </List>
+
+            )}
+            renderHiddenRow={ data => (
+              <View style={styles.rowBack}>
+                <TouchableOpacity
+                  style={styles.approve}
+                  onPress={() => this.handleApprove(data.id)}
+                >
+                  <Text style={styles.approveText}>Approve</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.disapprove}
+                  onPress={() => this.handleDisapprove(data.id)}
+                >
+                  <Text style={styles.disapproveText}>Disapprove</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+            leftOpenValue={100}
+            rightOpenValue={-100}
+          />
         </Content>
       </Container>
     );
@@ -111,6 +146,8 @@ function bindAction(dispatch) {
   return {
     setIndex: index => dispatch(setIndex(index)),
     setList: list => dispatch(setList(list)),
+    approve: id => dispatch(approve(id)),
+    disapprove: id => dispatch(disapprove(id)),
     openDrawer: () => dispatch(openDrawer()),
   };
 }
